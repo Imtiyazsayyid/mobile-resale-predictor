@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import getPriceEstimate from "./priceEstimateHelper";
 import { useRouter } from "next/navigation";
+import { Loader } from "@/components/Loader";
 
 interface Option {
   label: string;
@@ -19,6 +20,7 @@ const PredictorPage = () => {
   const [modelList, setModelList] = useState<Option[]>([]);
   const [osList, setOsList] = useState<Option[]>([]);
   const [colorList, setColorList] = useState<Option[]>([]);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const [form, setForm] = useState({
@@ -27,10 +29,10 @@ const PredictorPage = () => {
     os: "",
     color: "",
     condition: "",
-    ram: undefined as number | undefined,
-    storage: undefined as number | undefined,
-    cameraResolution: undefined as number | undefined,
-    screenSize: undefined as number | undefined,
+    ram: "",
+    storage: "",
+    cameraResolution: "",
+    screenSize: "",
   });
 
   const handleBrandSelect = (val: string) => {
@@ -73,14 +75,15 @@ const PredictorPage = () => {
       return;
     }
 
+    setLoading(true);
     const price = await getPriceEstimate(
       form.model,
       form.brand,
-      form.ram,
-      form.storage,
-      form.cameraResolution,
+      parseFloat(form.ram),
+      parseFloat(form.storage),
+      parseFloat(form.cameraResolution),
       form.os,
-      form.screenSize,
+      parseFloat(form.screenSize),
       form.condition,
       form.color
     );
@@ -156,9 +159,10 @@ const PredictorPage = () => {
           <div className="w-1/2 flex flex-col gap-1">
             <p className="text-sm text-gray-300">Ram &#40;GB&#41;</p>
             <Input
+              type="text"
               value={form.ram}
               onChange={(e) => {
-                setForm({ ...form, ram: e.target.value ? parseInt(e.target.value) : undefined });
+                setForm({ ...form, ram: e.target.value });
               }}
               className="w-full"
             />
@@ -167,9 +171,10 @@ const PredictorPage = () => {
           <div className="w-1/2 flex flex-col gap-1">
             <p className="text-sm text-gray-300">Storage &#40;GB&#41;</p>
             <Input
+              type="text"
               value={form.storage}
               onChange={(e) => {
-                setForm({ ...form, storage: e.target.value ? parseInt(e.target.value) : undefined });
+                setForm({ ...form, storage: e.target.value });
               }}
               className="w-full"
             />
@@ -180,9 +185,10 @@ const PredictorPage = () => {
           <div className="w-1/2 flex flex-col gap-1">
             <p className="text-sm text-gray-300">Camera Resolution &#40;MP&#41;</p>
             <Input
+              type="text"
               value={form.cameraResolution}
               onChange={(e) => {
-                setForm({ ...form, cameraResolution: e.target.value ? parseInt(e.target.value) : undefined });
+                setForm({ ...form, cameraResolution: e.target.value });
               }}
               className="w-full"
             />
@@ -191,9 +197,10 @@ const PredictorPage = () => {
           <div className="w-1/2 flex flex-col gap-1">
             <p className="text-sm text-gray-300">Screen Size &#40;inches&#41;</p>
             <Input
+              type="text"
               value={form.screenSize}
               onChange={(e) => {
-                setForm({ ...form, screenSize: e.target.value ? parseInt(e.target.value) : undefined });
+                setForm({ ...form, screenSize: e.target.value });
               }}
               className="w-full"
               step="0.1"
@@ -216,7 +223,15 @@ const PredictorPage = () => {
         </div>
 
         <div className="flex justify-end mt-5">
-          <Button onClick={getFinalPriceEstimate}>Estimate Price</Button>
+          <Button onClick={getFinalPriceEstimate} disabled={loading} className="flex items-center justify-center">
+            {loading ? (
+              <div className="flex justify-center items-center gap-1">
+                Estimating Price <Loader className="h-4 w-4" />
+              </div>
+            ) : (
+              "Estimate Price"
+            )}
+          </Button>
         </div>
       </div>
     </div>
